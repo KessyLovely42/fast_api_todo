@@ -1,54 +1,56 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from schemas.models import *
 
 api = FastAPI()
 
 #Simulated database of the todo app
 all_todos = [
-    {"id": 1, "name": "shop", "description": "go buy some food"},
-    {"id": 2, "name": "gym", "description": "spend 20 mins at the gym"},
-    {"id": 3, "name": "read", "description": "read 10 pages"},
-    {"id": 4, "name": "jump", "description": "go jump from rooftop"},
-    {"id": 5, "name": "hang out", "description": "go drink some beer"},
+    Todo(id = 1, name = "shop", description = "go buy some food", priority=Priority.HIGH),
+    Todo(id = 2, name = "gym", description = "go buy some food", priority=Priority.MEDIUM),
+    Todo(id = 3, name = "read", description = "go buy some food", priority=Priority.LOW),
+    Todo(id = 4, name = "read", description = "go buy some food", priority=Priority.MEDIUM),
+    Todo(id = 6, name = "hang out", description = "go buy some food", priority=Priority.LOW),
 ]
 
-@api.get("/")
-def index():
-    return {"hello Godswill"}
-
-@api.get("/todo/{id}")
-def get_todo(id: int):
-    for todo in all_todos:
-        if todo["id"] == id:
-            return todo
-    
-@api.get("/todos/")
+@api.get("/", response_model=List[Todo])
 def get_todos(items: int = None):
     if items:
         return all_todos[:items]
     else:
         return all_todos
 
+
+@api.get("/todo/{id}", response_model= Todo)
+def get_todo(id: int):
+    for todo in all_todos:
+        if todo.id == id:
+            return todo
+    raise HTTPException(status_code=404, detail="item not found")
+
 # create to do 
-@api.post("/add/")
-def create_todo(todo: dict):
-    if todo:
-        todo["id"] = len(all_todos)+1
+@api.post("/add/", response_model=Todo)
+def create_todo(todo: Todo):
+    new_todo_id = len(all_todos)+1
+    new_todo = Todo(
+        id = new_todo_id,
+        name = todo.name,
+        description = todo.description,
+        priority= todo.priority
 
-        todo["name"] = todo["name"]
-        todo["description"] = todo["description"]
+    )
 
-        all_todos.append(todo)
+    all_todos.append(new_todo)
 
-        return todo
-    return ("Could not add todo")
+    return todo
+
         
 # edit to do
 @api.put("/update/{id}")
-def edit_todo(id: int, todo: dict):
+def edit_todo(id: int, todo: TodoUpdate):
     for index, to_do in enumerate(all_todos):
         if id == index:
-            to_do["name"] = todo["name"],
-            to_do["description"] = todo["description"]     
+            to_do.name = todo.name,
+            to_do.description = todo.description    
         
             return {"message": f"Successfully updated todo with id: {id} ",
                     "data": to_do}
