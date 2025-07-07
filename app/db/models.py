@@ -12,7 +12,7 @@ class todos(Base):
     #table name
     __tablename__ = "todos"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(50))
     description: Mapped[Optional[str]]
     completed: Mapped[bool] 

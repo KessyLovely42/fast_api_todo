@@ -27,7 +27,7 @@ class TodoCreate(TodoBase):
 
 class TodoUpdate(TodoBase):
     #item name
-    name: Optional[str] = Field(None, min_length=3, max_length=512, description = "name of the todo Item")
+    title: Optional[str] = Field(None, min_length=3, max_length=512, description = "name of the todo Item")
 
     #item description 
     description: Optional[str] = Field(None, description = "description of the to do item" )
@@ -37,4 +37,4 @@ class TodoUpdate(TodoBase):
 
 class Todo(TodoBase):
     #id of the item 
-    id: Optional[str] = Field(None, description="unique identifier for the item")
+    id: Optional[int] = Field(None, description="unique identifier for the item")
