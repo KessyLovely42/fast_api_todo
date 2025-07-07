@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime
 from utils.utils import Priority
 
 from pydantic import BaseModel, Field
@@ -6,10 +7,16 @@ from pydantic import BaseModel, Field
 class TodoBase(BaseModel):
     """Base Class for the Todo Items"""
     #item name
-    name: str = Field(..., min_length=3, max_length=512, description = "name of the todo Item")
+    title: str = Field(..., min_length=3, max_length=512, description = "name of the todo Item")
 
     #item description
-    description: str = Field(..., description = "description of the to do item")
+    description: Optional[str] = Field(None, description = "description of the to do item")
+
+    #date and item was created
+    created : Optional[datetime] = Field(None, description= "date and time todo was created")
+
+    #if item is completed
+    completed : Optional[bool] = Field(default=False, description="to indicate if task has been completed")
 
     #item priority
     priority : Priority = Field(default = Priority.LOW, description = "priority of the to do item" )
@@ -30,4 +37,4 @@ class TodoUpdate(TodoBase):
 
 class Todo(TodoBase):
     #id of the item 
-    id: int = Field(..., description="unique identifier for the item")
+    id: Optional[str] = Field(None, description="unique identifier for the item")
