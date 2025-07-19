@@ -5,14 +5,15 @@ from schemas.todos_schema import *
 from db.models import todos
 from db.db_con import SessionDep
 from typing import Annotated
-from utils import get_current_user
+from utils import UserDep
 
 from starlette import status
 from sqlalchemy import select
 
-router = APIRouter()
-
-UserDep = Annotated[dict, Depends(get_current_user)]
+router = APIRouter(
+    prefix="/todos",
+    tags = ["todos"]
+)
 
 #** FIX THE RESPONSE MODEL OF THE GET ALL CLASS
 @router.get("/todos")
@@ -24,9 +25,15 @@ async def get_todos(session: SessionDep, user: UserDep,
     #todos_list = session.query(todos).limit(limit).offset(offset)
 
     #sqlalchemy 2.0 recommended syntax
-    stmt = select(todos).where(todos.user_id == user.get("id")).limit(limit).offset(offset)
-    todos_list = session.scalars(stmt).all()
-
+    role = user.get("role")
+    if role == 1:
+        stmt = select(todos).limit(limit).offset(offset)
+        todos_list = session.scalars(stmt).all()
+    
+    if role == 2:
+        stmt = select(todos).where(todos.user_id == user.get("id")).limit(limit).offset(offset)
+        todos_list = session.scalars(stmt).all() 
+    
     if not todos_list:
         raise HTTPException(status_code=404, detail="items not found")
     return todos_list    
@@ -106,6 +113,16 @@ async def delete_todo(id: Annotated[int, Path(gt=0)],
                       user: UserDep, 
                       session: SessionDep):
     #todo_db = session.get(todos, id)
+
+    role = user.get("role")
+    if role == 1:
+        stmt = select(todos).where(todos.id == id)
+        todo_db = session.scalars(stmt).one()
+    
+    if role == 2:
+        stmt = stmt = select(todos).where(todos.id == id and todos.user_id == user.get('id'))
+        todo_db = session.scalars(stmt).one()
+
     stmt = select(todos).where(todos.id == id and todos.user_id == user.get('id'))
     todo_db = session.scalars(stmt).one()
 

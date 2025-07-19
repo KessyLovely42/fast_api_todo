@@ -17,3 +17,7 @@ class UserResponse(BaseModel):
     last_name: str
     hashed_password: str
     role: Roles
+
+class PasswordRequest(BaseModel):
+    old_password: str
+    new_password: str

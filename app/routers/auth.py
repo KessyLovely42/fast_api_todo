@@ -11,7 +11,7 @@ from schemas.users_schema import CreateUser, UserResponse
 from passlib.context import CryptContext
 from db.db_con import SessionDep
 
-from utils import verify_user, create_token
+from utils import verify_user, create_token, UserDep
 
 from sqlalchemy import select
 
@@ -21,15 +21,6 @@ router = APIRouter(
 )
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
-
-@router.get("/",status_code= status.HTTP_200_OK, 
-            response_model=List[UserResponse])
-async def get_users(session: SessionDep):
-    
-    stmt = select(User)
-    users = session.scalars(stmt).all()
-    
-    return users
 
 @router.post("/new-user/", status_code=status.HTTP_201_CREATED)
 async def new_user(user: CreateUser, session: SessionDep):
@@ -58,8 +49,7 @@ async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depend
     user = verify_user(form_data.username, form_data.password, session, User)
     if not user:
         raise HTTPException(status_code=401, detail="Could not authorize user")
-    access_token =  create_token(user.username, user.id, timedelta(minutes=10))
-    print(f"in auth_user access token is {access_token}")
+    access_token =  create_token(user.username, user.id, user.role, timedelta(minutes=10))
     return access_token
     # stmt = select(User).where(User.username == form_data.username)
     # user = session.scalars(stmt).first()

@@ -18,8 +18,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 oauth_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
-
-
 #Priority item
 class Priority(IntEnum):
     """Helper class to define the priority of the to do item"""
@@ -41,8 +39,8 @@ def verify_user(username: str, password: str, db, model):
         return False
     return user
 
-def create_token(username: str, user_id: int, expires_delta: timedelta):
-    encode = {'sub': username, 'id': user_id}
+def create_token(username: str, user_id: int, user_role: int, expires_delta: timedelta):
+    encode = {'sub': username, 'id': user_id, "role": user_role}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp":expires})
     token = jwt.encode(encode,SECRET_KEY,algorithm=ALGORITHM)
@@ -50,12 +48,15 @@ def create_token(username: str, user_id: int, expires_delta: timedelta):
 
 async def get_current_user(token: Annotated[str, Depends(oauth_bearer)]):
     try:
-        print(f"in get_current_user access token is {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        username: str = payload.get('sub')
+        username: str = payload.get("sub")
         user_id: int = payload.get('id')
+        user_role: int = payload.get("role")
         if username is None or user_id is None:
             raise HTTPException(status_code=401, detail="Userid or password not found")
-        return {'username': username, 'id': user_id}
+        return {'username': username, 'id': user_id, 'role': user_role}
     except JWTError:
         raise HTTPException(status_code=401, detail="Token is not valid")
+    
+
+UserDep = Annotated[dict, Depends(get_current_user)]
