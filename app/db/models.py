@@ -10,7 +10,6 @@ from utils import Priority, Roles
 from db.db_con import Base 
 from typing import List, Optional, Union
 
-from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -26,7 +25,21 @@ class User(Base):
 
     
 
-    #def __init__(self, username: str, first_name: str, last_name: str, )
+    def __init__(self, 
+                 email: str, 
+                 username: str, 
+                 first_name: str, 
+                 last_name: str, 
+                 hashed_password: str, 
+                 is_active:bool, 
+                 role: Roles):
+        self.email = email
+        self.username = username
+        self.first_name = first_name
+        self.last_name = last_name
+        self.hashed_password = hashed_password
+        self.is_active = is_active
+        self.role = role
 
 class todos(Base):
     #table name

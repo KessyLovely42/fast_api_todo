@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 #** FIX THE RESPONSE MODEL OF THE GET ALL CLASS
-@router.get("/todos")
+@router.get("/")
 async def get_todos(session: SessionDep, user: UserDep, 
               limit: int = Annotated[int, Query(le=100)],  
               offset: int = 0
@@ -39,7 +39,7 @@ async def get_todos(session: SessionDep, user: UserDep,
     return todos_list    
     
 
-@router.get("/todo/{id}", status_code=status.HTTP_200_OK )
+@router.get("/{id}", status_code=status.HTTP_200_OK )
 async def get_todo(id: Annotated[int, Path(gt=0)],
                    user: UserDep,  
                    session: SessionDep):
