@@ -2,3 +2,5 @@
 /notebooks
 .env
 **/__pycache__
+**.DS_Store
+

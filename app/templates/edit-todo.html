@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <form id = "editTodoForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="title" class="form-label">Title:</label>
+            <input type="text" name="title" class="form-control" value = "{{todo.title}}" required>
+            <div class="invalid-feedback">Please provide a title.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea name="description" class="form-control" rows="3">{{todo.description}}</textarea>
+            <div class="invalid-feedback">Please provide a description.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="priority" class="form-label">Priority:</label>
+            <select name="priority" class="form-select" required>
+                <option value="1" {% if todo.priority == 1 %} selected="selected" {% endif %}>HIGH</option>
+                <option value="2" {% if todo.priority == 1 %} selected="selected" {% endif %}>MID</option>
+                <option value="3" {% if todo.priority == 1 %} selected="selected" {% endif %}>LOW</option>
+            </select>
+            <div class="invalid-feedback">Please select a priority.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="completed" class="form-label">Completed:</label>
+            <select name="completed" class="form-select" required>
+                <option value= true {% if todo.completed == true %} selected="selected" {% endif %}>YES</option>
+                <option value= false {% if todo.completed == false %} selected="selected" {% endif %}>NO</option>
+            </select>
+            <div class="invalid-feedback">Please select a priority.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Edit</button>
+        <button id="deleteButton" type="button" class="btn btn-danger">Delete</button>
+    </form>
+    <!-- <button id="deleteButton" type="submit" class="btn btn-danger">Delete</button> -->
+</div>
+{% endblock %}

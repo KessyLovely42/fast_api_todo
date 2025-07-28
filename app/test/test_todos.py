@@ -2,25 +2,10 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker # Session, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import create_engine, text
-from sqlalchemy.pool import StaticPool
 from utils import Roles, get_current_user
 from main import app
 from db.db_con import get_session
-from db.models import Base, todos
-
-
-#define database URL
-SQL_DB_URL = "sqlite:///test_todoapp.db"
-
-#define engine 
-engine = create_engine(SQL_DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
-
-#define local session
-TestSessionLocal =  sessionmaker(autoflush=False, autocommit =False, bind=engine)
-
-Base.metadata.create_all(bind=engine)
+from test.utils import *
 
 #create dependency function 
 def override_get_session():
@@ -34,49 +19,48 @@ def override_get_current_user():
 app.dependency_overrides[get_session] = override_get_session
 app.dependency_overrides[get_current_user] = override_get_current_user
 
-# TestSessionDep = Annotated[Session, Depends(test_get_session)]
-
-#Define Declarative base
-
-
-# #Create todos model
-
-# class test_user(Base):
-#     __tablename__ = "test_users"
-
-#     id: Mapped[int] = mapped_column(primary_key=True, index = True)
-#     email: Mapped[str] = mapped_column(unique=True)
-#     username: Mapped[str] = mapped_column(unique=True)
-#     first_name: Mapped[str]
-#     last_name: Mapped[str]
-#     hashed_password: Mapped[str] = mapped_column(unique= True)
-#     is_active: Mapped[bool] = mapped_column(default=True)
-#     role: Mapped[Roles] 
-
 client = TestClient(app)
 
-@pytest.fixture
-def test_todo():
-    todo = todos(
-        title="Design Dashboard",
-        description="Prototype a new Power BI sales dashboard",
-        completed= False,
-        priority=1
-    )
+def test_todos_check_if_healthy():
+    response = client.get("/todos/healthy")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {"status":"app is healthy"}
 
-    db = TestSessionLocal()
-    db.add(todo)
-    db.commit()
-    yield db
-    with engine.connect() as conn:
-        conn.execute(text("DELETE * FROM todos"))
-        conn.commit()
-
-def test_autheticate_read_all(test_todo):
+def test_get_all_todos(test_todo):
     response = client.get("/todos/")
     assert response.status_code == status.HTTP_200_OK
-    assert response.json == {"title" : "Design Dashboard",
+    assert response == [{
+        "id": 1,
+        "title" : "Design Dashboard",
         "description" : "Prototype a new Power BI sales dashboard",
         "completed" : False,
-        "priority" : 1}
+        "date_created": "2025-07-25 10:37:08.526165",
+        "priority" : 1,
+        "user_id": 1}]
 
+def test_get_one_todos(test_todo):
+    response = client.get("/todos/todo/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "id": 1,
+        "title" : "Design Dashboard",
+        "description" : "Prototype a new Power BI sales dashboard",
+        "completed" : False,
+        "date_created": "2025-07-25 10:37:08.526165",
+        "priority" : 1,
+        "user_id": 1}
+
+def test_get_one_todo_failed(test_todo):
+    response = client.get("/todos/todo/898")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_create_todo():
+    todo_request = {
+        "title": "Design Dashboard",
+        "description": "Prototype a new Power BI sales dashboard",
+        "completed": False,
+        "priority": 1
+    }
+
+    response = client.post("/todos/new/", json = todo_request)
+    assert response.status_code == status.HTTP_201_CREATED

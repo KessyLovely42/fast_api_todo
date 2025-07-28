@@ -1,22 +1,26 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from db.models import Base
 from db.db_con import engine
 
 from routers import auth, todos, admin, users
 
+app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-@app.get("/healthy")
-async def check_if_healthy():
-    return {"status":"app is healthy"}
+#endpoint for testing
+# @app.get("/healthy")
+# async def check_app_con():
+#     return {"status":"app is healthy"}
 
-@app.get("/", status_code= status.HTTP_200_OK)
-async def get_all():
-    return "endpoint okay"
-
+#endpoint to check the home html
+@app.get("/")
+async def view_check(request: Request):
+    return RedirectResponse("/todos/todo-page")
 
 app.include_router(admin.router)
 app.include_router(users.router)

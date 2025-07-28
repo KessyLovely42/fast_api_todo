@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-center mb-4">Your Todo List</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example row -->
+                <!-- <tr>
+                    <td>1</td>
+                    <td>Sample Todo</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm">Edit</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr> -->
+
+                {% for todo in todos %}
+                {% if todo.completed == False %}
+                <tr class = "pointer">
+                    <td> {{loop.index}}</td>
+                    <td>{{todo.title}}</td>
+                    <td>
+                        <a href="/todos/edit-todo/{{todo.id}}"><button class="btn btn-warning btn-sm">Edit</button></a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr class = "pointer">
+                    <td> {{loop.index}}</td>
+                    <td class="text-decoration-line-through">{{todo.title}}</td>
+                    <td>
+                        <a href="/todos/edit-todo/{{todo.id}}"><button class="btn btn-warning btn-sm">Edit</button></a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/todos/new-todo" class="btn btn-primary">New Task</a>
+    </div>
+</div>
+{% endblock %}

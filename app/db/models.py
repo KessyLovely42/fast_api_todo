@@ -1,5 +1,6 @@
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from random import randint
 
@@ -22,6 +23,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(unique= True)
     is_active: Mapped[bool] = mapped_column(default=True)
     role: Mapped[Roles] 
+    date_created: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     
 
@@ -49,17 +51,30 @@ class todos(Base):
     title: Mapped[str] = mapped_column(String(50))
     description: Mapped[Optional[str]]
     completed: Mapped[bool] 
-    date_created: Mapped[str]
+    date_created: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     priority: Mapped[Priority] #User object from the Priority class defined
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     #user: Mapped["User"] = relationship(back_populates="todos")
 
-    # def __init__(self, title: str, description: Optional[str], completed : bool, priority: int):
-    #     self.title = title
-    #     self.description = description
-    #     self.completed = completed 
-    #     self.priority = priority 
-    #     self.date_created = datetime.now()
+    def __init__(self, title: str, description: Optional[str], completed : bool, priority: int, user_id:str):
+        self.title = title
+        self.description = description
+        self.completed = completed 
+        self.priority = priority 
+        self.user_id = user_id
+    
+    def to_dict(self) -> dict : 
+        dict_obj = {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "completed": self.completed,
+            "date_created": self.date_created,
+            "priority":self.priority,
+            "user_id": self.user_id
+
+        }
+        return dict_obj
 
     

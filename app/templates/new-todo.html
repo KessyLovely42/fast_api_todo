@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <form id = "todoForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="title" class="form-label">Title:</label>
+            <input type="text" name="title" class="form-control" required>
+            <div class="invalid-feedback">Please provide a title.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea>
+            <div class="invalid-feedback">Please provide a description.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="priority" class="form-label">Priority:</label>
+            <select name="priority" class="form-select" required>
+                <option value="1">HIGH</option>
+                <option value="2">MID</option>
+                <option value="3">LOW</option>
+            </select>
+            <div class="invalid-feedback">Please select a priority.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Todo</button>
+    </form>
+</div>
+{% endblock %}

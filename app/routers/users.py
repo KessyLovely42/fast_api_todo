@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from utils import UserDep
 from db.db_con import SessionDep
 from db.models import User
@@ -20,15 +20,15 @@ async def show_user_info(user: UserDep, session: SessionDep):
         raise HTTPException(status_code=404, detail="user not found")
     return user_db
 
-@router.patch("/change-password")
+@router.patch("/change-password", status_code=status.HTTP_204_NO_CONTENT )
 async def change_password(user: UserDep, 
                           password: PasswordRequest, 
                           session: SessionDep):
     if user is None:
-        raise HTTPException(status_code=404, detail="Not autorized")
+        raise HTTPException(status_code=401, detail="Not autorized")
 
     if not password:
-        return "password cannot be empty"
+        raise HTTPException(status_code=401, detail="password error")
     old_password = password.old_password
     new_password = password.new_password
 
@@ -36,7 +36,6 @@ async def change_password(user: UserDep,
     if pass_encrypt.verify(old_password, user_db.hashed_password):
         user_db.hashed_password = pass_encrypt.hash(new_password)
         session.commit()
-        return "password change successful"
     
     else:
         return "password does not match"

@@ -1,7 +1,7 @@
 from typing import Annotated, List
 from datetime import timedelta
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
@@ -11,7 +11,7 @@ from schemas.users_schema import CreateUser, UserResponse
 from passlib.context import CryptContext
 from db.db_con import SessionDep
 
-from utils import verify_user, create_token, UserDep
+from utils import verify_user, create_token, templates
 
 from sqlalchemy import select
 
@@ -21,6 +21,17 @@ router = APIRouter(
 )
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
+
+
+#PAGES
+@router.get("/login-page")
+async def render_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request":request})
+
+@router.get("/register-page")
+async def render_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
 
 @router.post("/new-user/", status_code=status.HTTP_201_CREATED)
 async def new_user(user: CreateUser, session: SessionDep):
@@ -35,6 +46,7 @@ async def new_user(user: CreateUser, session: SessionDep):
         hashed_password = bcrypt_context.hash(user.hashed_password),
         is_active = True,
         role = user.role
+
     )
 
     session.add(new_user)
@@ -46,10 +58,13 @@ async def new_user(user: CreateUser, session: SessionDep):
 @router.post("/token/")
 async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                           session: SessionDep): 
+    #print("in the token router")
     user = verify_user(form_data.username, form_data.password, session, User)
     if not user:
         raise HTTPException(status_code=401, detail="Could not authorize user")
     access_token =  create_token(user.username, user.id, user.role, timedelta(minutes=10))
+    #print(f"token is: {access_token["access_token"]}")
+    
     return access_token
     # stmt = select(User).where(User.username == form_data.username)
     # user = session.scalars(stmt).first()

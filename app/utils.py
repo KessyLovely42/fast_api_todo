@@ -6,7 +6,9 @@ from jose import jwt, JWTError
 from dotenv import load_dotenv
 import os
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
+from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 from typing import Annotated
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
@@ -17,6 +19,9 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 oauth_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
+
+#Page templates
+templates = Jinja2Templates(directory="app/templates")
 
 #Priority item
 class Priority(IntEnum):
@@ -58,5 +63,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth_bearer)]):
     except JWTError:
         raise HTTPException(status_code=401, detail="Token is not valid")
     
-
 UserDep = Annotated[dict, Depends(get_current_user)]
+
+def login_redirection():
+    response_redirection = RedirectResponse(url="/auth/login-page", status_code=status.HTTP_302_FOUND)
+    response_redirection.delete_cookie(key="access_token")
+    return response_redirection
